@@ -8,7 +8,7 @@ import (
 
 func init() {
 	if config.Config.Middleware.Authority.Enable {
-		g.Server().BindMiddleware("/admin/open/login/*", BaseAuthorityMiddlewareOpen)
+		g.Server().BindMiddleware("/admin/base/open/login/*", BaseAuthorityMiddlewareOpen)
 		g.Server().BindMiddleware("/admin/user/*", TokenAuthMiddleware)
 		g.Server().BindMiddleware("/admin/recharge_card/*", TokenAuthMiddleware)
 	}

@@ -30,7 +30,7 @@ type RechargeCardController struct {
 func init() {
 	var user_open_controller = &UserOpenController{
 		&cool.Controller{
-			Perfix:  "/admin/open",
+			Perfix:  "/admin/base/open",
 			Service: service.NewUserService(),
 		},
 	}
