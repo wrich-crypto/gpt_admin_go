@@ -1,8 +1,12 @@
 package admin
 
 import (
+	"fmt"
+	admin_model "gpt_admin_go/modules/admin/model"
+	"gpt_admin_go/modules/user/config"
 	"gpt_admin_go/modules/user/model"
 	"gpt_admin_go/modules/user/service"
+	"mime/multipart"
 
 	"github.com/gogf/gf/v2/frame/g"
 
@@ -12,6 +16,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/cool-team-official/cool-admin-go/cool"
 )
 
@@ -84,7 +89,8 @@ func (c *UserOpenController) HandleUserLogin(ctx context.Context, req *LoginReq)
 		return cool.Fail("Password error"), nil
 	}
 
-	responseData := g.Map{"token": token}
+	user.Password = ""
+	responseData := g.Map{"token": token, "user": user}
 	return cool.Ok(responseData), nil
 }
 
@@ -110,6 +116,46 @@ func stringWithCharset(length int, charset string) string {
 	return string(b)
 }
 
+type UploadFileReq struct {
+	g.Meta   `path:"/upload" method:"POST"`
+	File     multipart.File `p:"file"`
+	FileName string         `p:"file_name"`
+}
+
+func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadFileReq) (res *cool.BaseRes, err error) {
+	// 以下为OSS的相关配置
+	var (
+		endpoint        = config.Config.Oss.Endpoint
+		accessKeyID     = config.Config.Oss.AccessKeyID
+		accessKeySecret = config.Config.Oss.AccessKeySecret
+		bucketName      = config.Config.Oss.BucketName
+	)
+
+	// 创建OSSClient实例。
+	client, err := oss.New(endpoint, accessKeyID, accessKeySecret)
+	if err != nil {
+		g.Log().Error(ctx, "Failed to create OSS client: ", err)
+		return cool.Fail("Failed to create OSS client"), err
+	}
+
+	// 获取存储空间。
+	bucket, err := client.Bucket(bucketName)
+	if err != nil {
+		g.Log().Error(ctx, "Failed to get bucket: ", err)
+		return cool.Fail("Failed to get bucket"), err
+	}
+
+	// 上传文件流。
+	err = bucket.PutObject(req.FileName, req.File)
+	if err != nil {
+		g.Log().Error(ctx, "Failed to upload file: ", err)
+		return cool.Fail("Failed to upload file"), err
+	}
+
+	fileUrl := bucketName + "." + endpoint + "/" + req.FileName
+	return cool.Ok(g.Map{"file_url": fileUrl}), nil
+}
+
 type AddCardReq struct {
 	g.Meta         `path:"/add_auto" method:"POST"`
 	CardNumber     int     `p:"card_number"`
@@ -119,6 +165,31 @@ type AddCardReq struct {
 }
 
 func (c *RechargeCardController) HandleAddCardAuto(ctx context.Context, req *AddCardReq) (res *cool.BaseRes, err error) {
+	user, ok := ctx.Value("user").(*model.Users)
+	if !ok {
+		return cool.Fail("Invalid user context"), fmt.Errorf("Invalid user context")
+	}
+
+	if user.Role != 2 && user.Role != 3 {
+		return cool.Fail("Unauthorized"), fmt.Errorf("Unauthorized")
+	}
+
+	if user.Role == 2 {
+		balance, err := admin_model.GetAgentBalance(user.ReferralCode)
+		if err != nil {
+			return cool.Fail("Failed to get agent balance"), err
+		}
+
+		if balance < req.RechargeAmount*float64(req.CardNumber) {
+			return cool.Fail("Insufficient agent balance"), fmt.Errorf("Insufficient agent balance")
+		}
+
+		err = admin_model.UpdateAgentBalance(user.ReferralCode, balance-(req.RechargeAmount*float64(req.CardNumber)))
+		if err != nil {
+			return cool.Fail("Failed to update agent balance"), err
+		}
+	}
+
 	for i := 0; i < req.CardNumber; i++ {
 		cardAccount := stringWithCharset(10, charset)
 		cardPassword := stringWithCharset(8, charset)

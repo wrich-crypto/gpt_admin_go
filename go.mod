@@ -3,6 +3,7 @@ module gpt_admin_go
 go 1.18
 
 require (
+	github.com/aliyun/aliyun-oss-go-sdk v2.2.7+incompatible
 	github.com/cool-team-official/cool-admin-go/contrib/drivers/mysql v1.5.1
 	github.com/cool-team-official/cool-admin-go/cool v1.5.1
 	github.com/gogf/gf/v2 v2.4.1
@@ -33,6 +34,7 @@ require (
 	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/time v0.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.5.0 // indirect
 	gorm.io/gorm v1.25.0 // indirect

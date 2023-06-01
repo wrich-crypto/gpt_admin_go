@@ -9,6 +9,14 @@ import (
 type sConfig struct {
 	Jwt        *Jwt
 	Middleware *Middleware
+	Oss        *Oss
+}
+
+type Oss struct {
+	Endpoint        string
+	AccessKeyID     string
+	AccessKeySecret string
+	BucketName      string
 }
 
 type Middleware struct {
@@ -56,6 +64,12 @@ func NewConfig() *sConfig {
 			Log: &Log{
 				Enable: cool.GetCfgWithDefault(ctx, "modules.user.middleware.log.enable", g.NewVar(true)).Bool(),
 			},
+		},
+		Oss: &Oss{
+			Endpoint:        cool.GetCfgWithDefault(ctx, "modules.user.oss.endpoint", g.NewVar("")).String(),
+			AccessKeyID:     cool.GetCfgWithDefault(ctx, "modules.user.oss.accessKeyID", g.NewVar("")).String(),
+			AccessKeySecret: cool.GetCfgWithDefault(ctx, "modules.user.oss.accessKeySecret", g.NewVar("")).String(),
+			BucketName:      cool.GetCfgWithDefault(ctx, "modules.user.oss.bucketName", g.NewVar("")).String(),
 		},
 	}
 
