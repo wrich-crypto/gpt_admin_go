@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"strings"
 
 	"github.com/gogf/gf/v2/frame/g"
@@ -83,6 +84,10 @@ func TokenAuthMiddleware(r *ghttp.Request) {
 		})
 		return
 	}
+
+	// 将用户信息添加到context中
+	ctx = context.WithValue(ctx, "user", user)
+	r.SetCtx(ctx) // 将新的context关联到请求
 
 	// 在此处添加任何你想要的逻辑
 	r.Middleware.Next()
