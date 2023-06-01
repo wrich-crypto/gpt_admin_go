@@ -55,7 +55,7 @@ func NewConfig() *sConfig {
 		ctx g.Ctx
 	)
 
-	f, err := os.Open("user_config.yaml")
+	f, err := os.Open("/gpt_admin_go/modules/user/config/user_config.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
