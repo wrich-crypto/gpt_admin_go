@@ -19,10 +19,10 @@ type sConfig struct {
 }
 
 type Oss struct {
-	Endpoint        string
-	AccessKeyID     string
-	AccessKeySecret string
-	BucketName      string
+	Endpoint        string `yaml:"endpoint"`
+	AccessKeyID     string `yaml:"accessKeyID"`
+	AccessKeySecret string `yaml:"accessKeySecret"`
+	BucketName      string `yaml:"bucketName"`
 }
 
 type Middleware struct {
@@ -73,6 +73,11 @@ func NewConfig() *sConfig {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	g.Log().Info(ctx, user_config.Oss.Endpoint)
+	g.Log().Info(ctx, user_config.Oss.AccessKeyID)
+	g.Log().Info(ctx, user_config.Oss.AccessKeySecret)
+	g.Log().Info(ctx, user_config.Oss.BucketName)
 
 	config := &sConfig{
 		Jwt: &Jwt{

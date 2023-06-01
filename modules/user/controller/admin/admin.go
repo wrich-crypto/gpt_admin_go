@@ -131,6 +131,11 @@ func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadF
 		bucketName      = config.Config.Oss.BucketName
 	)
 
+	g.Log().Info(ctx, endpoint)
+	g.Log().Info(ctx, accessKeyID)
+	g.Log().Info(ctx, accessKeySecret)
+	g.Log().Info(ctx, bucketName)
+
 	// 创建OSSClient实例。
 	client, err := oss.New(endpoint, accessKeyID, accessKeySecret)
 	if err != nil {
