@@ -3,6 +3,12 @@ package config
 import (
 	"github.com/cool-team-official/cool-admin-go/cool"
 	"github.com/gogf/gf/v2/frame/g"
+
+	"io/ioutil"
+	"log"
+	"os"
+
+	"gopkg.in/yaml.v2"
 )
 
 // sConfig 配置
@@ -48,6 +54,26 @@ func NewConfig() *sConfig {
 	var (
 		ctx g.Ctx
 	)
+
+	f, err := os.Open("user_config.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	// Read the file content
+	content, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Unmarshal the YAML content to a Config object
+	var user_config sConfig
+	err = yaml.Unmarshal(content, &user_config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	config := &sConfig{
 		Jwt: &Jwt{
 			Sso:    cool.GetCfgWithDefault(ctx, "modules.user.jwt.sso", g.NewVar(false)).Bool(),
@@ -66,10 +92,10 @@ func NewConfig() *sConfig {
 			},
 		},
 		Oss: &Oss{
-			Endpoint:        cool.GetCfgWithDefault(ctx, "modules.user.oss.endpoint", g.NewVar("")).String(),
-			AccessKeyID:     cool.GetCfgWithDefault(ctx, "modules.user.oss.accessKeyID", g.NewVar("")).String(),
-			AccessKeySecret: cool.GetCfgWithDefault(ctx, "modules.user.oss.accessKeySecret", g.NewVar("")).String(),
-			BucketName:      cool.GetCfgWithDefault(ctx, "modules.user.oss.bucketName", g.NewVar("")).String(),
+			Endpoint:        cool.GetCfgWithDefault(ctx, "modules.user.oss.endpoint", g.NewVar(user_config.Oss.Endpoint)).String(),
+			AccessKeyID:     cool.GetCfgWithDefault(ctx, "modules.user.oss.accessKeyID", g.NewVar(user_config.Oss.AccessKeyID)).String(),
+			AccessKeySecret: cool.GetCfgWithDefault(ctx, "modules.user.oss.accessKeySecret", g.NewVar(user_config.Oss.AccessKeySecret)).String(),
+			BucketName:      cool.GetCfgWithDefault(ctx, "modules.user.oss.bucketName", g.NewVar(user_config.Oss.BucketName)).String(),
 		},
 	}
 

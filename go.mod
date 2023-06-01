@@ -7,6 +7,7 @@ require (
 	github.com/cool-team-official/cool-admin-go/contrib/drivers/mysql v1.5.1
 	github.com/cool-team-official/cool-admin-go/cool v1.5.1
 	github.com/gogf/gf/v2 v2.4.1
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
