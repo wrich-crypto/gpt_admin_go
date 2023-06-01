@@ -54,9 +54,9 @@ func init() {
 }
 
 type AddBalanceReq struct {
-	g.Meta       `path:"/add_balance" method:"POST"`
-	ReferralCode string  `p:"referral_code"`
-	Amount       float64 `p:"amount"`
+	g.Meta  `path:"/add_balance" method:"POST"`
+	AgentID int     `p:"agent_id"`
+	Amount  float64 `p:"amount"`
 }
 
 func (c *AgentController) HandleAddBalance(ctx context.Context, req *AddBalanceReq) (res *cool.BaseRes, err error) {
@@ -71,16 +71,7 @@ func (c *AgentController) HandleAddBalance(ctx context.Context, req *AddBalanceR
 		return cool.Fail("User role not authorized"), nil
 	}
 
-	// Get agent's current balance
-	balance, err := admin_model.GetAgentBalance(req.ReferralCode)
-	if err != nil {
-		g.Log().Error(ctx, "HandleAddBalance error getting agent balance", err)
-		return cool.Fail("Error getting agent balance"), err
-	}
-
-	// Calculate new balance and update
-	newBalance := balance + req.Amount
-	err = admin_model.UpdateAgentBalance(req.ReferralCode, newBalance)
+	err = admin_model.AddAgentBalanceByAgentID(req.AgentID, req.Amount)
 	if err != nil {
 		g.Log().Error(ctx, "HandleAddBalance error updating agent balance", err)
 		return cool.Fail("Error updating agent balance"), err
