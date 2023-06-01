@@ -4,6 +4,12 @@ import (
 	"github.com/cool-team-official/cool-admin-go/cool"
 )
 
+const (
+	ROLE_NORMAL = 1
+	ROLE_AGENT  = 2
+	ROLE_ADMIN  = 3
+)
+
 type Users struct {
 	*cool.Model
 	Username        string `gorm:"column:username;size:50;unique;not null" json:"username"`
