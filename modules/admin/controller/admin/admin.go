@@ -1,9 +1,14 @@
 package admin
 
 import (
+	"context"
+	"fmt"
+	admin_model "gpt_admin_go/modules/admin/model"
 	"gpt_admin_go/modules/admin/service"
+	"gpt_admin_go/modules/user/model"
 
 	"github.com/cool-team-official/cool-admin-go/cool"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 type ApiKeysController struct {
@@ -46,4 +51,40 @@ func init() {
 	cool.RegisterController(api_key_controller)
 	cool.RegisterController(dev_config_controller)
 	cool.RegisterController(agent_controller)
+}
+
+type AddBalanceReq struct {
+	g.Meta       `path:"/add_balance" method:"POST"`
+	ReferralCode string  `p:"referral_code"`
+	Amount       float64 `p:"amount"`
+}
+
+func (c *AgentController) HandleAddBalance(ctx context.Context, req *AddBalanceReq) (res *cool.BaseRes, err error) {
+	user, ok := ctx.Value("user").(*model.Users)
+	if !ok {
+		return cool.Fail("Invalid user context"), fmt.Errorf("Invalid user context")
+	}
+
+	// Check if the user is a superadmin
+	if user.Role != 3 {
+		g.Log().Error(ctx, "HandleAddBalance user role not authorized")
+		return cool.Fail("User role not authorized"), nil
+	}
+
+	// Get agent's current balance
+	balance, err := admin_model.GetAgentBalance(req.ReferralCode)
+	if err != nil {
+		g.Log().Error(ctx, "HandleAddBalance error getting agent balance", err)
+		return cool.Fail("Error getting agent balance"), err
+	}
+
+	// Calculate new balance and update
+	newBalance := balance + req.Amount
+	err = admin_model.UpdateAgentBalance(req.ReferralCode, newBalance)
+	if err != nil {
+		g.Log().Error(ctx, "HandleAddBalance error updating agent balance", err)
+		return cool.Fail("Error updating agent balance"), err
+	}
+
+	return cool.Ok("Agent balance updated successfully"), nil
 }
