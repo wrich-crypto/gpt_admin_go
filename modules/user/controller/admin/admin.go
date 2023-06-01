@@ -6,9 +6,9 @@ import (
 	"gpt_admin_go/modules/user/config"
 	"gpt_admin_go/modules/user/model"
 	"gpt_admin_go/modules/user/service"
-	"mime/multipart"
 
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 
 	"context"
 	"crypto/sha256"
@@ -118,8 +118,8 @@ func stringWithCharset(length int, charset string) string {
 
 type UploadFileReq struct {
 	g.Meta   `path:"/upload" method:"POST"`
-	File     multipart.File `p:"file"`
-	FileName string         `p:"file_name"`
+	File     *ghttp.UploadFile `p:"file"`
+	FileName string            `p:"file_name"`
 }
 
 func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadFileReq) (res *cool.BaseRes, err error) {
@@ -145,8 +145,13 @@ func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadF
 		return cool.Fail("Failed to get bucket"), err
 	}
 
+	file, err := req.File.Open()
+	if err != nil {
+		// handle error
+	}
+
 	// 上传文件流。
-	err = bucket.PutObject(req.FileName, req.File)
+	err = bucket.PutObject(req.FileName, file)
 	if err != nil {
 		g.Log().Error(ctx, "Failed to upload file: ", err)
 		return cool.Fail("Failed to upload file"), err
