@@ -16,6 +16,7 @@ type RechargeCards struct {
 	UsedPoints     int       `gorm:"column:used_points" json:"used_points"`
 	BoundUser      string    `gorm:"column:bound_user;size:100" json:"bound_user"`
 	CreateUser     string    `gorm:"column:create_user;size:100" json:"create_user"`
+	CreateUserId   int       `gorm:"column:create_user_id" json:"create_user_id"`
 	RechargeType   string    `gorm:"column:recharge_type;size:50" json:"recharge_type"`
 	Remark         string    `gorm:"column:remark;size:255" json:"remark"`
 	Status         int       `gorm:"column:status;default:1;not null" json:"status"`

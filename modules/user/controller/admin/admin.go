@@ -6,6 +6,7 @@ import (
 	"gpt_admin_go/modules/user/config"
 	"gpt_admin_go/modules/user/model"
 	"gpt_admin_go/modules/user/service"
+	"strings"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -223,4 +224,132 @@ func (c *RechargeCardController) HandleAddCardAuto(ctx context.Context, req *Add
 	}
 
 	return cool.Ok("Cards added successfully"), nil
+}
+
+type UserListReq struct {
+	g.Meta       `path:"/user_list" method:"POST"`
+	Size         int    `p:"size" v:"max:100#最多每页显示100条数据"`
+	Page         int    `p:"page"`
+	Order        string `p:"order"`
+	Sort         string `p:"sort"`
+	KeyWordField string `p:"key_word_field"`
+	KeyWord      string `p:"key_word"`
+}
+
+func (c *UserController) UserList(ctx context.Context, req *UserListReq) (res *cool.BaseRes, err error) {
+	user, ok := ctx.Value("user").(*model.Users)
+	if !ok {
+		return cool.Fail("Invalid user context"), fmt.Errorf("Invalid user context")
+	}
+
+	var users []*model.Users
+
+	db := g.DB().Model(model.NewUsers().TableName())
+
+	if req.KeyWord != "" && req.KeyWordField != "" {
+		fields := strings.Split(req.KeyWordField, ",")
+		for _, field := range fields {
+			db = db.Where(field+" LIKE ?", "%"+req.KeyWord+"%")
+		}
+	}
+
+	if user.HasRole(model.ROLE_ADMIN) {
+		// Administrator can see all users
+	} else if user.HasRole(model.ROLE_AGENT) {
+		// Agent can only see users they invited
+		db = db.Where("invitation_user_id = ?", user.ID)
+	} else {
+		return cool.Fail("User role not authorized"), nil
+	}
+
+	if req.Order != "" {
+		if req.Sort == "" {
+			req.Sort = "asc"
+		}
+		db = db.Order(req.Order + " " + req.Sort)
+	}
+
+	if req.Page != 0 {
+		if req.Size == 0 {
+			req.Size = 10
+		}
+		db = db.Page(req.Page, req.Size)
+	}
+
+	all, err := db.All()
+	if err != nil {
+		g.Log().Error(ctx, "UserList error fetching users", err)
+		return cool.Fail("Error fetching users"), err
+	}
+
+	if err = all.Structs(&users); err != nil {
+		g.Log().Error(ctx, "UserList error scanning users", err)
+		return cool.Fail("Error scanning users"), err
+	}
+
+	return cool.Ok(users), nil
+}
+
+type RechargeCardListReq struct {
+	g.Meta       `path:"/recharge_card_list" method:"POST"`
+	Size         int    `p:"size" v:"max:100#最多每页显示100条数据"`
+	Page         int    `p:"page"`
+	Order        string `p:"order"`
+	Sort         string `p:"sort"`
+	KeyWordField string `p:"key_word_field"`
+	KeyWord      string `p:"key_word"`
+}
+
+func (c *RechargeCardController) RechargeCardList(ctx context.Context, req *RechargeCardListReq) (res *cool.BaseRes, err error) {
+	user, ok := ctx.Value("user").(*model.Users)
+	if !ok {
+		return cool.Fail("Invalid user context"), fmt.Errorf("Invalid user context")
+	}
+
+	var cards []*model.RechargeCards
+
+	db := g.DB().Model(model.NewRechargeCards().TableName())
+
+	if req.KeyWord != "" && req.KeyWordField != "" {
+		fields := strings.Split(req.KeyWordField, ",")
+		for _, field := range fields {
+			db = db.Where(field+" LIKE ?", "%"+req.KeyWord+"%")
+		}
+	}
+
+	if user.HasRole(model.ROLE_ADMIN) {
+		// Administrator can see all recharge cards
+	} else if user.HasRole(model.ROLE_AGENT) {
+		// Agent can only see recharge cards they created
+		db = db.Where("create_user_id = ?", user.ID)
+	} else {
+		return cool.Fail("User role not authorized"), nil
+	}
+
+	if req.Order != "" {
+		if req.Sort == "" {
+			req.Sort = "asc"
+		}
+		db = db.Order(req.Order + " " + req.Sort)
+	}
+
+	if req.Page != 0 {
+		if req.Size == 0 {
+			req.Size = 10
+		}
+		db = db.Page(req.Page, req.Size)
+	}
+
+	all, err := db.All()
+	if err != nil {
+		g.Log().Error(ctx, "RechargeCardList error fetching cards", err)
+		return cool.Fail("Error fetching recharge cards"), err
+	}
+
+	if err = all.Structs(&cards); err != nil {
+		g.Log().Error(ctx, "RechargeCardList error scanning cards", err)
+		return cool.Fail("Error scanning recharge cards"), err
+	}
+
+	return cool.Ok(cards), nil
 }
