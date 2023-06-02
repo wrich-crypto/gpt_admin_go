@@ -10,7 +10,6 @@ type RechargeCards struct {
 	*cool.Model
 	CardAccount    string    `gorm:"column:card_account;size:20;unique;not null" json:"card_account"`
 	CardPassword   string    `gorm:"column:card_password;size:20;not null" json:"card_password"`
-	CreateTime     time.Time `gorm:"column:create_time" json:"create_time"`
 	ExpireTime     time.Time `gorm:"column:expire_time" json:"expire_time"`
 	RechargeAmount float64   `gorm:"column:recharge_amount;type:decimal(20,2);not null"`
 	UsedPoints     int       `gorm:"column:used_points" json:"used_points"`

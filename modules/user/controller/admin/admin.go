@@ -171,7 +171,6 @@ type AddCardReq struct {
 	g.Meta         `path:"/add_auto" method:"POST"`
 	CardNumber     int     `p:"card_number"`
 	RechargeAmount float64 `p:"recharge_amount"`
-	CreateUser     string  `p:"create_user"`
 	Remark         string  `p:"remark"`
 }
 
@@ -208,10 +207,10 @@ func (c *RechargeCardController) HandleAddCardAuto(ctx context.Context, req *Add
 		rechargeCard := &model.RechargeCards{
 			CardAccount:    cardAccount,
 			CardPassword:   cardPassword,
-			CreateTime:     time.Now(),
 			ExpireTime:     time.Now().AddDate(0, 0, 7), // assuming 7 days of validity for the card
 			RechargeAmount: req.RechargeAmount,
-			CreateUser:     req.CreateUser,
+			CreateUser:     user.Username,
+			CreateUserId:   int(user.ID),
 			Remark:         req.Remark,
 			Status:         1, // assuming status 1 for a new card
 		}
