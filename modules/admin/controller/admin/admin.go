@@ -147,3 +147,26 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 
 	return cool.Ok("Agent updated successfully"), nil
 }
+
+type GetAgentReq struct {
+	g.Meta `path:"/get_agent" method:"GET"`
+}
+
+func (c *AgentController) GetAgentByReferralCode(ctx context.Context, req *GetAgentReq) (res *cool.BaseRes, err error) {
+	user, ok := ctx.Value("user").(*model.Users)
+	if !ok {
+		return cool.Fail("Invalid user context"), fmt.Errorf("Invalid user context")
+	}
+
+	agent := admin_model.NewAgent()
+
+	// Fetch the agent based on the user's referral code
+	err = g.DB().Model(agent.TableName()).Where("referral_code", user.ReferralCode).Scan(agent)
+	if err != nil {
+		g.Log().Error(ctx, "GetAgentByReferralCode error fetching agent", err)
+		return cool.Fail("Error fetching agent"), err
+	}
+
+	responseData := g.Map{"agent": agent}
+	return cool.Ok(responseData), nil
+}
