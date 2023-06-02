@@ -1,6 +1,9 @@
 package model
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/cool-team-official/cool-admin-go/cool"
 )
 
@@ -26,7 +29,7 @@ type Users struct {
 	RemainingPoints int    `gorm:"column:remaining_points" json:"remaining_points"`
 	Source          string `gorm:"column:source" json:"source"`
 	Remarks         string `gorm:"column:remarks" json:"remarks"`
-	Role            int    `gorm:"column:role;default:1" json:"role"`
+	Role            string `gorm:"column:role;default:1;comment:多个角色用逗号隔开" json:"role"`
 	Status          int    `gorm:"column:status;default:1" json:"status"`
 }
 
@@ -46,7 +49,24 @@ func NewUsers() *Users {
 	}
 }
 
+func (u *Users) HasRole(role int) bool {
+	roles := strings.Split(u.Role, ",")
+	for _, r := range roles {
+		rInt, err := strconv.Atoi(r)
+		if err != nil {
+			// handle error here, possibly continue to next iteration
+			continue
+		}
+		if rInt == role {
+			return true
+		}
+	}
+	return false
+}
+
 // init 创建表
 func init() {
 	cool.CreateTable(&Users{})
 }
+
+// 检查role是否存在

@@ -66,7 +66,7 @@ func (c *AgentController) HandleAddBalance(ctx context.Context, req *AddBalanceR
 	}
 
 	// Check if the user is a superadmin
-	if user.Role != 3 {
+	if user.HasRole(model.ROLE_ADMIN) {
 		g.Log().Error(ctx, "HandleAddBalance user role not authorized")
 		return cool.Fail("User role not authorized"), nil
 	}
@@ -86,6 +86,7 @@ type UpdateAgentReq struct {
 	AIName               string  `p:"ai_name"`
 	AIAvatar             string  `p:"ai_avatar"`
 	ReferralReward       int     `p:"referral_reward"`
+	UserId               int     `p:"user_id"`
 	CustomerServicePhone string  `p:"customer_service_phone"`
 	Domain               string  `p:"domain"`
 	Slogan               string  `p:"slogan"`
@@ -103,7 +104,7 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 	}
 
 	// Check if the user is a superadmin
-	if user.Role != model.ROLE_ADMIN && user.Role != model.ROLE_AGENT {
+	if !user.HasRole(model.ROLE_AGENT) && !user.HasRole(model.ROLE_ADMIN) {
 		g.Log().Error(ctx, "UpdateAgent user role not authorized")
 		return cool.Fail("User role not authorized"), nil
 	}
@@ -111,7 +112,7 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 	agent := admin_model.NewAgent()
 
 	// For super admin
-	if user.Role == model.ROLE_ADMIN {
+	if user.HasRole(model.ROLE_ADMIN) {
 		// Fetch the agent based on the provided id
 		err := g.DB().Model(agent.TableName()).Where("id", req.ID).Scan(agent)
 		if err != nil {
@@ -119,7 +120,7 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 			return cool.Fail("Error fetching agent"), err
 		}
 		agent.Balance = req.Balance
-	} else if user.Role == model.ROLE_AGENT {
+	} else if user.HasRole(model.ROLE_AGENT) {
 		// Fetch the agent based on the user's referral code
 		err := g.DB().Model(agent.TableName()).Where("referral_code", user.ReferralCode).Scan(agent)
 		if err != nil {
@@ -138,6 +139,7 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 	agent.Title = req.Title
 	agent.WeChatQRCode = req.WeChatQRCode
 	agent.ReferralCode = req.ReferralCode
+	agent.UserId = req.UserId
 
 	_, err = g.DB().Model(agent.TableName()).Where("id", agent.ID).Data(agent).Update()
 	if err != nil {
@@ -161,7 +163,7 @@ func (c *AgentController) GetAgentByReferralCode(ctx context.Context, req *GetAg
 	agent := admin_model.NewAgent()
 
 	// Fetch the agent based on the user's referral code
-	err = g.DB().Model(agent.TableName()).Where("referral_code", user.ReferralCode).Scan(agent)
+	err = g.DB().Model(agent.TableName()).Where("user_id", user.ID).Scan(agent)
 	if err != nil {
 		g.Log().Error(ctx, "GetAgentByReferralCode error fetching agent", err)
 		return cool.Fail("Error fetching agent"), err

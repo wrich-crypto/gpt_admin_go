@@ -75,7 +75,7 @@ func TokenAuthMiddleware(r *ghttp.Request) {
 	}
 
 	// 验证用户角色是否为管理员和代理商
-	if user.Role != model.ROLE_ADMIN && user.Role != model.ROLE_AGENT {
+	if !user.HasRole(model.ROLE_AGENT) && !user.HasRole(model.ROLE_ADMIN) {
 		g.Log().Error(ctx, "TokenAuthMiddleware", "user role not authorized")
 		statusCode = 403
 		r.Response.WriteStatusExit(statusCode, g.Map{

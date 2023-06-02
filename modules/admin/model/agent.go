@@ -16,7 +16,8 @@ type Agent struct {
 	CustomerServicePhone string  `gorm:"column:customer_service_phone;size:20;comment:客服电话" json:"customer_service_phone"`
 	Domain               string  `gorm:"column:domain;size:100;comment:域名多个用逗号隔开" json:"domain"`
 	ReferralCode         string  `gorm:"column:referral_code;size:100;comment:邀请码" json:"referral_code"`
-	Balance              float64 `gorm:"column:balance;type:decimal(20,2);default:0"`
+	UserId               int     `gorm:"column:user_id;comment:用户ID 2关闭" json:"user_id"`
+	Balance              float64 `gorm:"column:balance;type:decimal(20,2);default:0" json:"balance"`
 }
 
 const TableNameAgent = "agent"
