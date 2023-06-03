@@ -13,7 +13,7 @@ type VerificationCodes struct {
 	Phone     string    `gorm:"column:phone;size:100"`
 	CodeType  string    `gorm:"column:code_type;size:10;not null"`
 	Code      string    `gorm:"column:code;size:10;not null"`
-	ExpiredAt time.Time `gorm:"column:expired_at;not null"`
+	ExpiredAt time.Time `gorm:"column:expired_at"`
 }
 
 const TableNameVerificationCodes = "verification_code"
