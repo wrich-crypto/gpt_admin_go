@@ -16,6 +16,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"math/rand"
+	"path/filepath"
 	"time"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
@@ -132,8 +133,10 @@ func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadF
 		bucketName      = config.Config.Oss.BucketName
 	)
 
-	// Create a new random UUID for filename.
-	uuid := newUUID()
+	g.Log().Info(ctx, endpoint)
+	g.Log().Info(ctx, accessKeyID)
+	g.Log().Info(ctx, accessKeySecret)
+	g.Log().Info(ctx, bucketName)
 
 	// 创建OSSClient实例。
 	client, err := oss.New(endpoint, accessKeyID, accessKeySecret)
@@ -151,8 +154,17 @@ func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadF
 
 	file, err := req.File.Open()
 	if err != nil {
-		// handle error
+		return cool.Fail("Failed to upload file"), err
 	}
+
+	// Get the extension of the uploaded file.
+	g.Log().Info(ctx, req.File.Filename)
+	fileExtension := filepath.Ext(req.File.Filename)
+
+	// Create a new random UUID for filename.
+	uuid := newUUID() + fileExtension
+
+	g.Log().Info(ctx, uuid)
 
 	// 上传文件流。
 	err = bucket.PutObject(uuid, file)
