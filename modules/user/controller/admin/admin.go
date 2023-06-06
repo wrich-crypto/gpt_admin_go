@@ -270,6 +270,12 @@ func (c *UserController) UserList(ctx context.Context, req *UserListReq) (res *c
 		for _, field := range fields {
 			db = db.Where(field+" LIKE ?", "%"+req.KeyWord+"%")
 		}
+	} else if req.KeyWord != "" {
+		// Define all fields in the Users model
+		fields := []string{"username", "email", "phone", "referral_code", "source", "remarks"} // replace with actual fields
+		for _, field := range fields {
+			db = db.Where(field+" LIKE ?", "%"+req.KeyWord+"%")
+		}
 	}
 
 	if user.HasRole(model.ROLE_ADMIN) {
@@ -331,6 +337,12 @@ func (c *RechargeCardController) RechargeCardList(ctx context.Context, req *Rech
 
 	if req.KeyWord != "" && req.KeyWordField != "" {
 		fields := strings.Split(req.KeyWordField, ",")
+		for _, field := range fields {
+			db = db.Where(field+" LIKE ?", "%"+req.KeyWord+"%")
+		}
+	} else if req.KeyWord != "" {
+		// Define all fields in the Users model
+		fields := []string{"card_account", "recharge_amount", "create_user", "create_user_id", "remark", "recharge_time"} // replace with actual fields
 		for _, field := range fields {
 			db = db.Where(field+" LIKE ?", "%"+req.KeyWord+"%")
 		}
