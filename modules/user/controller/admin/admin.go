@@ -12,6 +12,7 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 
 	"context"
+	cryptoRand "crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"math/rand"
@@ -118,9 +119,8 @@ func stringWithCharset(length int, charset string) string {
 }
 
 type UploadFileReq struct {
-	g.Meta   `path:"/upload" method:"POST"`
-	File     *ghttp.UploadFile `p:"file"`
-	FileName string            `p:"file_name"`
+	g.Meta `path:"/upload" method:"POST"`
+	File   *ghttp.UploadFile `p:"file"`
 }
 
 func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadFileReq) (res *cool.BaseRes, err error) {
@@ -132,10 +132,8 @@ func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadF
 		bucketName      = config.Config.Oss.BucketName
 	)
 
-	g.Log().Info(ctx, endpoint)
-	g.Log().Info(ctx, accessKeyID)
-	g.Log().Info(ctx, accessKeySecret)
-	g.Log().Info(ctx, bucketName)
+	// Create a new random UUID for filename.
+	uuid := newUUID()
 
 	// 创建OSSClient实例。
 	client, err := oss.New(endpoint, accessKeyID, accessKeySecret)
@@ -157,14 +155,24 @@ func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadF
 	}
 
 	// 上传文件流。
-	err = bucket.PutObject(req.FileName, file)
+	err = bucket.PutObject(uuid, file)
 	if err != nil {
 		g.Log().Error(ctx, "Failed to upload file: ", err)
 		return cool.Fail("Failed to upload file"), err
 	}
 
-	fileUrl := bucketName + "." + endpoint + "/" + req.FileName
+	fileUrl := bucketName + "." + endpoint + "/" + uuid
 	return cool.Ok(g.Map{"file_url": fileUrl}), nil
+}
+
+func newUUID() (uuid string) {
+	b := make([]byte, 16)
+	_, err := cryptoRand.Read(b)
+	if err != nil {
+		panic(err)
+	}
+	uuid = fmt.Sprintf("%X-%X-%X-%X-%X", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+	return
 }
 
 type AddCardReq struct {
