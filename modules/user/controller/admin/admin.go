@@ -131,6 +131,7 @@ func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadF
 		accessKeyID     = config.Config.Oss.AccessKeyID
 		accessKeySecret = config.Config.Oss.AccessKeySecret
 		bucketName      = config.Config.Oss.BucketName
+		maxFileSize     = 100 << 20 // 10MB
 	)
 
 	g.Log().Info(ctx, endpoint)
@@ -155,6 +156,12 @@ func (c *UserOpenController) HandleUploadToOSS(ctx context.Context, req *UploadF
 	file, err := req.File.Open()
 	if err != nil {
 		return cool.Fail("Failed to upload file"), err
+	}
+
+	defer file.Close()
+	// Check the size of the file.
+	if req.File.Size > int64(maxFileSize) {
+		return cool.Fail("File too large"), nil
 	}
 
 	// Get the extension of the uploaded file.
