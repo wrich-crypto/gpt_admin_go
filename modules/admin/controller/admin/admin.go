@@ -121,7 +121,7 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 			return cool.Fail("Error fetching agent"), err
 		}
 		agent.Balance = req.Balance
-		setting_user_id = req.ID
+		setting_user_id = agent.UserId
 	} else if user.HasRole(model.ROLE_AGENT) {
 		// Fetch the agent based on the user's referral code
 		err := g.DB().Model(agent.TableName()).Where("user_id", user.ID).Scan(agent)
