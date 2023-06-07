@@ -10,7 +10,7 @@ type Agent struct {
 	Title                string  `gorm:"column:title;size:100;comment:标题" json:"title"`
 	Slogan               string  `gorm:"column:slogan;size:100;comment:广告语" json:"slogan"`
 	AIName               string  `gorm:"column:ai_name;size:50;comment:AI名字" json:"ai_name"`
-	AIAvatar             string  `gorm:"column:ai_avatar;size:100;comment:AI头像" json:"ai_avatar"`
+	AIAvatar             string  `gorm:"column:ai_avatar;size:255;comment:AI头像" json:"ai_avatar"`
 	ReferralReward       int     `gorm:"column:referral_reward;comment:邀请奖励开关1打开 2关闭" json:"referral_reward"`
 	WeChatQRCode         string  `gorm:"column:wechat_qr_code;size:255;comment:微信二维码" json:"wechat_qr_code"`
 	CustomerServicePhone string  `gorm:"column:customer_service_phone;size:20;comment:客服电话" json:"customer_service_phone"`
