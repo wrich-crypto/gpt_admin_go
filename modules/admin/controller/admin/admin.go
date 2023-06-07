@@ -85,6 +85,7 @@ type UpdateAgentReq struct {
 	ID                   int     `p:"id"`
 	AIName               string  `p:"ai_name"`
 	AIAvatar             string  `p:"ai_avatar"`
+	Logo                 string  `p:"logo"`
 	ReferralReward       int     `p:"referral_reward"`
 	UserId               int     `p:"user_id"`
 	CustomerServicePhone string  `p:"customer_service_phone"`
@@ -139,6 +140,7 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 	agent.UserId = setting_user_id
 	agent.AIName = req.AIName
 	agent.AIAvatar = req.AIAvatar
+	agent.Logo = req.Logo
 	agent.ReferralReward = req.ReferralReward
 	agent.CustomerServicePhone = req.CustomerServicePhone
 	agent.Domain = req.Domain
