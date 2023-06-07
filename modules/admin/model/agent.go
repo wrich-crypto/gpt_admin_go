@@ -50,6 +50,15 @@ func GetAgentBalance(referralCode string) (float64, error) {
 	return agent.Balance, nil
 }
 
+func GetAgentBalanceByUserId(user_id int) (float64, error) {
+	agent := new(Agent)
+	err := g.DB().Model(agent.TableName()).Where("user_id", user_id).Scan(agent)
+	if err != nil {
+		return 0, err
+	}
+	return agent.Balance, nil
+}
+
 func UpdateAgentBalance(referralCode string, newBalance float64) error {
 	agent := new(Agent)
 	err := g.DB().Model(agent.TableName()).Where("referral_code", referralCode).Scan(agent)
@@ -59,6 +68,22 @@ func UpdateAgentBalance(referralCode string, newBalance float64) error {
 
 	agent.Balance = newBalance
 	_, err = g.DB().Model(agent.TableName()).Where("referral_code", referralCode).Data(agent).Update()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateAgentBalanceByUserId(user_id int, newBalance float64) error {
+	agent := new(Agent)
+	err := g.DB().Model(agent.TableName()).Where("user_id", user_id).Scan(agent)
+	if err != nil {
+		return err
+	}
+
+	agent.Balance = newBalance
+	_, err = g.DB().Model(agent.TableName()).Where("user_id", user_id).Data(agent).Update()
 	if err != nil {
 		return err
 	}

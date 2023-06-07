@@ -205,7 +205,7 @@ func (c *RechargeCardController) HandleAddCardAuto(ctx context.Context, req *Add
 	}
 
 	if user.HasRole(model.ROLE_AGENT) {
-		balance, err := admin_model.GetAgentBalance(user.ReferralCode)
+		balance, err := admin_model.GetAgentBalanceByUserId(int(user.ID))
 		if err != nil {
 			return cool.Fail("Failed to get agent balance"), err
 		}
@@ -214,7 +214,7 @@ func (c *RechargeCardController) HandleAddCardAuto(ctx context.Context, req *Add
 			return cool.Fail("Insufficient agent balance"), fmt.Errorf("Insufficient agent balance")
 		}
 
-		err = admin_model.UpdateAgentBalance(user.ReferralCode, balance-(req.RechargeAmount*float64(req.CardNumber)))
+		err = admin_model.UpdateAgentBalanceByUserId(int(user.ID), balance-(req.RechargeAmount*float64(req.CardNumber)))
 		if err != nil {
 			return cool.Fail("Failed to update agent balance"), err
 		}
