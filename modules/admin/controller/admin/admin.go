@@ -146,7 +146,6 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 	agent.Title = req.Title
 	agent.WeChatQRCode = req.WeChatQRCode
 	agent.ReferralCode = req.ReferralCode
-	agent.UserId = req.UserId
 
 	_, err = g.DB().Model(agent.TableName()).Where("id", agent.ID).Data(agent).Update()
 	if err != nil {
