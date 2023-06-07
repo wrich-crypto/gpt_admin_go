@@ -294,25 +294,51 @@ func (c *UserController) UserList(ctx context.Context, req *UserListReq) (res *c
 		db = db.Order(req.Order + " " + req.Sort)
 	}
 
+	// pagination setup
+	var page, size int
 	if req.Page != 0 {
-		if req.Size == 0 {
-			req.Size = 10
-		}
-		db = db.Page(req.Page, req.Size)
+		page = req.Page
+	} else {
+		page = 1
 	}
+	if req.Size != 0 {
+		size = req.Size
+	} else {
+		size = 10
+	}
+	offset := (page - 1) * size
 
-	all, err := db.All()
+	// execute the query
+	all, err := db.Offset(offset).Limit(size).All()
 	if err != nil {
 		g.Log().Error(ctx, "UserList error fetching users", err)
 		return cool.Fail("Error fetching users"), err
 	}
 
+	// Scan the result
 	if err = all.Structs(&users); err != nil {
 		g.Log().Error(ctx, "UserList error scanning users", err)
 		return cool.Fail("Error scanning users"), err
 	}
 
-	return cool.Ok(users), nil
+	// Count total number of records
+	total, err := db.Count()
+	if err != nil {
+		g.Log().Error(ctx, "UserList error counting users", err)
+		return cool.Fail("Error counting users"), err
+	}
+
+	// Prepare the response
+	data := map[string]interface{}{
+		"list": users,
+		"pagination": map[string]int{
+			"page":  page,
+			"size":  size,
+			"total": total,
+		},
+	}
+
+	return cool.Ok(data), nil
 }
 
 type RechargeCardListReq struct {
@@ -364,23 +390,51 @@ func (c *RechargeCardController) RechargeCardList(ctx context.Context, req *Rech
 		db = db.Order(req.Order + " " + req.Sort)
 	}
 
+	// pagination setup
+	var page, size int
 	if req.Page != 0 {
-		if req.Size == 0 {
-			req.Size = 10
-		}
-		db = db.Page(req.Page, req.Size)
+		page = req.Page
+	} else {
+		page = 1
 	}
+	if req.Size != 0 {
+		size = req.Size
+	} else {
+		size = 10
+	}
+	offset := (page - 1) * size
 
-	all, err := db.All()
+	// .... rest of your code ....
+
+	// execute the query
+	all, err := db.Offset(offset).Limit(size).All()
 	if err != nil {
 		g.Log().Error(ctx, "RechargeCardList error fetching cards", err)
 		return cool.Fail("Error fetching recharge cards"), err
 	}
 
+	// Scan the result
 	if err = all.Structs(&cards); err != nil {
 		g.Log().Error(ctx, "RechargeCardList error scanning cards", err)
 		return cool.Fail("Error scanning recharge cards"), err
 	}
 
-	return cool.Ok(cards), nil
+	// Count total number of records
+	total, err := db.Count()
+	if err != nil {
+		g.Log().Error(ctx, "RechargeCardList error counting cards", err)
+		return cool.Fail("Error counting recharge cards"), err
+	}
+
+	// Prepare the response
+	data := map[string]interface{}{
+		"list": cards,
+		"pagination": map[string]int{
+			"page":  page,
+			"size":  size,
+			"total": total,
+		},
+	}
+
+	return cool.Ok(data), nil
 }
