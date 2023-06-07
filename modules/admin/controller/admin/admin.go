@@ -112,6 +112,7 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 	agent := admin_model.NewAgent()
 
 	// For super admin
+	setting_user_id := 0
 	if user.HasRole(model.ROLE_ADMIN) {
 		// Fetch the agent based on the provided id
 		err := g.DB().Model(agent.TableName()).Where("id", req.ID).Scan(agent)
@@ -120,6 +121,7 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 			return cool.Fail("Error fetching agent"), err
 		}
 		agent.Balance = req.Balance
+		setting_user_id = req.ID
 	} else if user.HasRole(model.ROLE_AGENT) {
 		// Fetch the agent based on the user's referral code
 		err := g.DB().Model(agent.TableName()).Where("user_id", user.ID).Scan(agent)
@@ -127,9 +129,14 @@ func (c *AgentController) UpdateAgent(ctx context.Context, req *UpdateAgentReq) 
 			g.Log().Error(ctx, "UpdateAgent error fetching agent", err)
 			return cool.Fail("Error fetching agent"), err
 		}
+		setting_user_id = int(user.ID)
+	} else {
+		g.Log().Error(ctx, "UpdateAgent user role not authorized")
+		return cool.Fail("User role not authorized"), nil
 	}
 
 	// Update the fields
+	agent.UserId = setting_user_id
 	agent.AIName = req.AIName
 	agent.AIAvatar = req.AIAvatar
 	agent.ReferralReward = req.ReferralReward
