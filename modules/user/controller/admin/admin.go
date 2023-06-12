@@ -211,7 +211,9 @@ func (c *RechargeCardController) HandleAddCardAuto(ctx context.Context, req *Add
 		return cool.Fail("Unauthorized"), fmt.Errorf("Unauthorized")
 	}
 
-	if user.HasRole(model.ROLE_AGENT) {
+	if user.HasRole(model.ROLE_ADMIN) {
+
+	} else if user.HasRole(model.ROLE_AGENT) {
 		balance, err := admin_model.GetAgentBalanceByUserId(int(user.ID))
 		if err != nil {
 			return cool.Fail("Failed to get agent balance"), err
