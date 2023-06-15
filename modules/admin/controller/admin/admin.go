@@ -162,7 +162,7 @@ type GetAgentReq struct {
 	g.Meta `path:"/get_agent" method:"GET"`
 }
 
-func (c *AgentController) GetAgentByReferralCode(ctx context.Context, req *GetAgentReq) (res *cool.BaseRes, err error) {
+func (c *AgentController) GetAgentInfo(ctx context.Context, req *GetAgentReq) (res *cool.BaseRes, err error) {
 	user, ok := ctx.Value("user").(*model.Users)
 	if !ok {
 		return cool.Fail("Invalid user context"), fmt.Errorf("Invalid user context")
@@ -173,7 +173,7 @@ func (c *AgentController) GetAgentByReferralCode(ctx context.Context, req *GetAg
 	// Fetch the agent based on the user's referral code
 	err = g.DB().Model(agent.TableName()).Where("user_id", user.ID).Scan(agent)
 	if err != nil {
-		g.Log().Error(ctx, "GetAgentByReferralCode error fetching agent", err)
+		g.Log().Error(ctx, "GetAgentInfo error fetching agent", err)
 		return cool.Fail("Error fetching agent"), err
 	}
 
