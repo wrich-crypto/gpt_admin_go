@@ -177,6 +177,19 @@ func (c *AgentController) GetAgentInfo(ctx context.Context, req *GetAgentReq) (r
 		return cool.Fail("Error fetching agent"), err
 	}
 
-	responseData := g.Map{"agent": agent}
+	// Fetch the consumed points
+	var consumedPoints float64
+	rechargeCards := model.NewRechargeCards()
+	sum, err := g.DB().Model(rechargeCards.TableName()).Where("create_user_id", user.ID).Sum("recharge_amount")
+	if err != nil {
+		g.Log().Error(ctx, "GetAgentInfo error fetching consumed points", err)
+		return cool.Fail("Error fetching consumed points"), err
+	}
+	consumedPoints = sum
+
+	responseData := g.Map{
+		"agent":           agent,
+		"consumed_points": consumedPoints, // include consumed points in the response
+	}
 	return cool.Ok(responseData), nil
 }
